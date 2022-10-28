@@ -25,5 +25,9 @@ jobs:
   Placeholder:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "The environment being deployed is ${{ inputs.deployEnvironment }}"
-      - run: echo "The artifacts bucket is $ARTIFACTS_S3_BUCKET"
+      - name: Confirm Environment
+        run: echo "The environment being deployed is ${{ inputs.deployEnvironment }}"
+      - name: Confirm Environment Variables
+        run: echo "The artifacts bucket is $ARTIFACTS_S3_BUCKET"
+      - name: Confirm Branch
+        run: echo "The branch selected is ${{ github.ref }}"
