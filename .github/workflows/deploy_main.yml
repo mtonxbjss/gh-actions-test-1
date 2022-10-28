@@ -1,0 +1,29 @@
+name: TonksDev Deploy Pipeline
+run-name: Deploy ${{ inputs.deployEnvironment || 'internal-dev' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployEnvironment:
+        description: 'Name of the environment to deploy'
+        required: true
+        default: 'internal-dev'
+        type: string
+
+env:
+  PROJECT_NAME: caas-pl
+  DEPLOY_ENVIRONMENT: ci-only
+  DEFAULT_ENVIRONMENT: acct-pl-mgmt
+  UTILS_PATH: prod
+  ARTIFACTS_S3_BUCKET: 'caas-pl-680509669821-eu-west-2-pl-mgmt-acct-cicd-artifacts'
+  ARTIFACTS_S3_BUCKET_PATH: 'caas-artifacts'
+  ECR_REGISTRY_ACCOUNT: '680509669821'
+  ECR_REGISTRY: '680509669821.dkr.ecr.eu-west-2.amazonaws.com'
+  FORCE_COLOR: 1
+
+jobs:
+  Placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "The environment being deployed is ${{ inputs.deployEnvironment }}"
+      - run: echo "The artifacts bucket is $ARTIFACTS_S3_BUCKET"
