@@ -1,0 +1,79 @@
+name: TonksDev Deploy Pipeline
+run-name: Deploy ${{ inputs.deployEnvironment || 'internal-dev' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployEnvironment:
+        description: Name of the environment to deploy
+        required: true
+        default: internal-dev
+        type: string
+      terraformAction:
+        description: Apply or Destroy
+        required: true
+        default: apply
+        type: choice
+        options:
+          - apply
+          - destroy
+
+env:
+  PROJECT_NAME: caas-pl
+  DEFAULT_ENVIRONMENT: acct-pl-mgmt
+  UTILS_PATH: prod
+  ARTIFACTS_S3_BUCKET: 'caas-pl-680509669821-eu-west-2-pl-mgmt-acct-cicd-artifacts'
+  ARTIFACTS_S3_BUCKET_PATH: 'caas-artifacts'
+  ECR_REGISTRY_ACCOUNT: '680509669821'
+  ECR_REGISTRY: '680509669821.dkr.ecr.eu-west-2.amazonaws.com'
+  FORCE_COLOR: 1
+
+jobs:
+  resolve:
+    runs-on:
+      - self-hosted
+      - small
+    container:
+      image: 680509669821.dkr.ecr.eu-west-2.amazonaws.com/terraform:443
+      env:
+        DEPLOY_ENVIRONMENT: ${{ inputs.deployEnvironment }}
+    steps:
+      - name: Confirm Environment
+        run: echo "The environment being deployed is ${{ inputs.deployEnvironment }}"
+      - name: Confirm Environment Variables
+        run: echo "The artifacts bucket is $ARTIFACTS_S3_BUCKET"
+      - name: Confirm Branch
+        run: echo "The branch selected is ${{ github.ref }}"
+      - name: Resolve Versions
+        run: ./cd_utils/resolve_versions.sh
+
+  terraform:
+    runs-on:
+      - self-hosted
+      - small
+    container:
+      image: 680509669821.dkr.ecr.eu-west-2.amazonaws.com/terraform:443
+      env:
+        DEPLOY_ENVIRONMENT: ${{ inputs.deployEnvironment }}
+    needs:
+      - permission_check
+    steps:
+      - name: Run Terraform
+        run: ./cd_utils/execute_pipeline_job.sh
+
+  audit_and_promote:
+    runs-on:
+      - self-hosted
+      - small
+    container:
+      image: 680509669821.dkr.ecr.eu-west-2.amazonaws.com/terraform:443
+      env:
+        DEPLOY_ENVIRONMENT: ${{ inputs.deployEnvironment }}
+    needs:
+      - terraform
+    if: ${{ inputs.terraformAction == "apply" }}
+    steps:
+      - name: Audit in CloudWatch Logs
+        run: ./cd_utils/audit_release.sh
+      - name: Promote
+        run: ./cd_utils/promote_version.sh
