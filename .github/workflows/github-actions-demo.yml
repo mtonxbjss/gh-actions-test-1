@@ -38,4 +38,6 @@ jobs:
       - run: echo "Host name is ${HOSTNAME}"
       - name: List files in the repository
         run: tree .
+      - name: test terraform
+        run: terraform --version
       - run: echo "🍏 This job's status is ${{ job.status }}."
