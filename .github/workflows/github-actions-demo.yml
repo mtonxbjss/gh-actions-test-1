@@ -43,3 +43,14 @@ jobs:
       - name: test terraform
         run: terraform --version
       - run: echo "🍏 This job's status is ${{ job.status }}."
+  No-Suitable-Runner:
+    runs-on:
+      - self-hosted
+      - caas-no-existy
+    container:
+      image: 490772702699.dkr.ecr.eu-west-2.amazonaws.com/terraform:latest
+      env:
+        DEPLOY_ENVIRONMENT: ${{ inputs.deployEnvironment }}
+    steps:
+      - name: I will always fail
+        run: echo "There's no suitable runner for me, so I can't ever run"
